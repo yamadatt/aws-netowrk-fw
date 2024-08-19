@@ -20,50 +20,62 @@ resource "aws_subnet" "subnet_firewall_a" {
 
 resource "aws_networkfirewall_rule_group" "ips" {
   capacity = 100
-  name     = "ips"
+  name     = "example"
   type     = "STATEFUL"
-  #rules    = file("${path.module}/rules/sample-rules.txt")
   rule_group {
     rules_source {
-      rules_string = file("./sample-suricata-rules.txt")
-    }
-    rule_variables {
-      ip_sets {
-        key = "EXTERNAL_NET"
-        ip_set {
-          definition = ["0.0.0.0/0"]
-        }
-      }
-
-      ip_sets {
-        key = "HOME_NET"
-        ip_set {
-          definition = [var.vpc_cidr]
-        }
-      }
-      ip_sets {
-        key = "HTTP_NET"
-        ip_set {
-          definition = ["${aws_instance.raido-rec.public_ip}/32"]
-        }
-      }
-
-      ip_sets {
-        key = "HTTP_PERMIT_NET"
-
-        ip_set {
-          definition = var.http_permit_ips
-        }
-      }
-      port_sets {
-        key = "HTTP_PORTS"
-        port_set {
-          #definition = ["[80,443]"]
-          definition = ["80", "443"]
-        }
+      rules_source_list {
+        generated_rules_type = "DENYLIST"
+        target_types         = ["TLS_SNI", "HTTP_HOST"]
+        targets              = ["yamada-tech-memo.netlify.app"]
       }
     }
   }
+  #   capacity = 100
+  #   name     = "ips"
+  #   type     = "STATEFUL"
+  #   #rules    = file("${path.module}/rules/sample-rules.txt")
+  #   rule_group {
+  #     rules_source {
+  #       rules_string = file("./sample-suricata-rules.txt")
+  #     }
+  #     rule_variables {
+  #       ip_sets {
+  #         key = "EXTERNAL_NET"
+  #         ip_set {
+  #           definition = ["0.0.0.0/0"]
+  #         }
+  #       }
+
+  #       ip_sets {
+  #         key = "HOME_NET"
+  #         ip_set {
+  #           definition = [var.vpc_cidr]
+  #         }
+  #       }
+  #       ip_sets {
+  #         key = "HTTP_NET"
+  #         ip_set {
+  #           definition = ["${aws_instance.raido-rec.public_ip}/32"]
+  #         }
+  #       }
+
+  #       ip_sets {
+  #         key = "HTTP_PERMIT_NET"
+
+  #         ip_set {
+  #           definition = var.http_permit_ips
+  #         }
+  #       }
+  #       port_sets {
+  #         key = "HTTP_PORTS"
+  #         port_set {
+  #           #definition = ["[80,443]"]
+  #           definition = ["80", "443"]
+  #         }
+  #       }
+  #     }
+  #   }
   tags = {
     Name = "nwfw-rules-ips"
   }
